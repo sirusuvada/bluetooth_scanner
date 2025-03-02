@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Scanner</title>
+    <script>
+        async function scanBluetooth() {
+            document.getElementById("devices").innerHTML = "Scanning...";
+            const response = await fetch("/scan");
+            const devices = await response.json();
+            let output = "<ul>";
+            devices.forEach(device => {
+                output += `<li>${device.name} (${device.address})</li>`;
+            });
+            output += "</ul>";
+            document.getElementById("devices").innerHTML = output;
+        }
+    </script>
+</head>
+<body>
+    <h1>Nearby Bluetooth Devices</h1>
+    <button onclick="scanBluetooth()">Scan</button>
+    <div id="devices"></div>
+</body>
+</html>
