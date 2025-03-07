@@ -1,19 +1,15 @@
-async function scanBluetooth() {
-    try {
-        console.log("Requesting Bluetooth Device...");
-        const device = await navigator.bluetooth.requestDevice({
-            acceptAllDevices: true, // Allow any device
-            optionalServices: ['battery_service']  // Modify based on your need
-        });
-
-        console.log("Device found:", device.name || "Unknown device");
-        let deviceList = document.getElementById("deviceList");
-        let listItem = document.createElement("li");
-        listItem.textContent = device.name || "Unknown Device";
-        deviceList.appendChild(listItem);
-
-    } catch (error) {
-        console.log("Bluetooth scan failed:", error);
-        alert("Error: " + error.message);
-    }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Scanner & LED Control</title>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <h1>Bluetooth Scanner & LED Controller</h1>
+    <button onclick="scanBluetooth()">Scan for Bluetooth Devices</button>
+    <ul id="deviceList"></ul>
+    <button id="ledOnBtn" onclick="turnOnLED()" disabled>Turn On LED</button>
+</body>
+</html>
