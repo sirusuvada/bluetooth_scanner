@@ -1,0 +1,71 @@
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+using namespace std;
+#define LED_PIN 2  // Change this to your LED GPIO pin
+
+// UUIDs for BLE Service and Characteristic
+#define SERVICE_UUID        "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define CHARACTERISTIC_UUID "0000ffe1-0000-1000-8000-00805f9b34fb"
+
+BLECharacteristic *pCharacteristic;
+bool blinkLED = false;
+
+class MyCallbacks : public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+       std::string receivedValue = pCharacteristic->getValue().c_str();
+
+        Serial.print("Received: ");
+        blinkLED=true;
+        Serial.println(receivedValue.c_str()); // Print received data
+        delay(5000);
+        blinkLED=false;
+        if (receivedValue == std::string("1")) {  // Proper comparison
+            blinkLED = true;
+        } else {
+            blinkLED = false;
+            digitalWrite(LED_PIN, LOW);  // Turn off LED for any other value
+        }
+    }
+};
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("Starting BLE work!");
+
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, LOW);  // Ensure LED starts OFF
+
+    // Initialize BLE
+    BLEDevice::init("ESP32_BLE_Device");
+    BLEServer *pServer = BLEDevice::createServer();
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+
+    pCharacteristic = pService->createCharacteristic(
+                        CHARACTERISTIC_UUID,
+                        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
+                      );
+
+    pCharacteristic->setCallbacks(new MyCallbacks());
+    pCharacteristic->setValue("Send '1' to blink LED");
+
+    pService->start();
+    
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->setScanResponse(true);
+    pAdvertising->setMinPreferred(0x06);
+    pAdvertising->setMinPreferred(0x12);
+    
+    BLEDevice::startAdvertising();
+    Serial.println("BLE device is now discoverable!");
+}
+
+void loop() {
+    if (blinkLED) {
+        digitalWrite(LED_PIN, HIGH);
+        delay(500);
+        digitalWrite(LED_PIN, LOW);
+        delay(500);
+    }
+}
